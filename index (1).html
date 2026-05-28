@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fitrah · Space</title>
+  <style>
+    @font-face {
+      font-family: 'Coolvetica';
+      src: url('https://fonts.cdnfonts.com/s/15011/coolvetica rg.woff') format('woff'),
+           url('https://fonts.cdnfonts.com/css/coolvetica') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+    }
+  </style>
+  <link href="https://fonts.cdnfonts.com/css/coolvetica" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #020b18;
+      --surface: rgba(255,255,255,0.04);
+      --surface-hover: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.08);
+      --border-active: rgba(56,189,248,0.4);
+      --blue: #38BDF8;
+      --indigo: #818CF8;
+      --text: #E2EBF5;
+      --muted: #4A6A8A;
+      --danger: #EF4444;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'Coolvetica', sans-serif;
+      color: var(--text);
+      overflow-x: hidden;
+      letter-spacing: 0.10em;
+    }
+
+    /* ── BACKGROUND ── */
+    .bg-glow {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    }
+    .bg-glow::before {
+      content: '';
+      position: absolute;
+      top: -20%; left: -10%;
+      width: 60%; height: 60%;
+      background: radial-gradient(ellipse, rgba(14,165,233,0.12) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .bg-glow::after {
+      content: '';
+      position: absolute;
+      bottom: -20%; right: -10%;
+      width: 55%; height: 55%;
+      background: radial-gradient(ellipse, rgba(99,102,241,0.1) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* ── LAYOUT ── */
+    .container {
+      position: relative; z-index: 1;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 60px 20px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── PASSWORD SCREEN ── */
+    #pw-screen {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      padding: 20px;
+    }
+    .pw-card {
+      width: 100%; max-width: 360px;
+      background: rgba(5,15,30,0.95);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      backdrop-filter: blur(20px);
+      animation: fadeUp 0.4s ease;
+    }
+    .pw-logo {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .pw-logo .brand {
+      font-family: 'Coolvetica', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38BDF8, #818CF8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .pw-logo .sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .pw-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .pw-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-family: 'Coolvetica', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      letter-spacing: 0.2em;
+      outline: none;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .pw-input:focus { border-color: var(--border-active); }
+    .pw-input.error { border-color: var(--danger); }
+    .pw-error {
+      font-size: 11px;
+      color: var(--danger);
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .pw-error.show { display: block; }
+    .pw-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #0EA5E9, #6366F1);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-family: 'Coolvetica', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s;
+      box-shadow: 0 4px 20px rgba(14,165,233,0.3);
+    }
+    .pw-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(14,165,233,0.4); }
+
+    @keyframes shake {
+      0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)}
+    }
+    .shake { animation: shake 0.4s ease; }
+
+    /* ── MAIN CONTENT ── */
+    #main { display: none; width: 100%; }
+    #main.show { display: flex; flex-direction: column; align-items: center; }
+
+    .greeting {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeUp 0.5s ease 0.1s both;
+    }
+    .greeting .hello {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #38BDF8, #818CF8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    .greeting h1 {
+      font-family: 'Coolvetica', sans-serif;
+      font-size: clamp(26px, 5vw, 36px);
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+      letter-spacing: 0.11em;
+    }
+    .greeting h1 span {
+      background: linear-gradient(135deg, #38BDF8, #818CF8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .greeting .welcome {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 8px;
+      font-weight: 400;
+    }
+
+    /* ── LINKS ── */
+    .links-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .link-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px;
+      text-decoration: none;
+      color: var(--text);
+      backdrop-filter: blur(16px);
+      transition: all 0.22s cubic-bezier(.4,0,.2,1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease both;
+    }
+    .link-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(56,189,248,0.06), rgba(129,140,248,0.06));
+      opacity: 0;
+      transition: opacity 0.22s;
+    }
+    .link-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(56,189,248,0.12);
+    }
+    .link-card:hover::before { opacity: 1; }
+
+    .link-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(129,140,248,0.15));
+      border: 1px solid rgba(56,189,248,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .link-info { flex: 1; min-width: 0; }
+    .link-title {
+      font-family: 'Coolvetica', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: 0.11em;
+    }
+    .link-url {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: 0.09em;
+    }
+    .link-arrow {
+      color: var(--muted);
+      font-size: 16px;
+      flex-shrink: 0;
+      transition: transform 0.2s, color 0.2s;
+    }
+    .link-card:hover .link-arrow {
+      transform: translateX(3px);
+      color: var(--blue);
+    }
+
+    /* ── ADD BUTTON ── */
+    .add-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: transparent;
+      border: 1px dashed rgba(56,189,248,0.25);
+      border-radius: 16px;
+      padding: 14px 24px;
+      color: var(--muted);
+      font-family: 'Coolvetica', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      justify-content: center;
+      animation: fadeUp 0.5s ease 0.3s both;
+    }
+    .add-btn:hover {
+      border-color: rgba(56,189,248,0.5);
+      color: var(--blue);
+      background: rgba(56,189,248,0.05);
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: rgba(5,15,30,0.98);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      width: 100%;
+      max-width: 420px;
+      transform: translateY(16px);
+      transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 22px;
+    }
+    .modal-title {
+      font-family: 'Coolvetica', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .modal-close {
+      background: none; border: none;
+      color: var(--muted); font-size: 20px;
+      cursor: pointer; line-height: 1;
+      padding: 2px 6px; border-radius: 6px;
+      transition: color 0.15s;
+    }
+    .modal-close:hover { color: var(--text); }
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .field input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-family: 'Coolvetica', sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus { border-color: var(--border-active); }
+    .field input::placeholder { color: var(--muted); }
+    .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+    .btn-save {
+      flex: 1;
+      background: linear-gradient(135deg, #0EA5E9, #6366F1);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px;
+      font-family: 'Coolvetica', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-save:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-cancel {
+      padding: 11px 18px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: 'Coolvetica', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-cancel:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+    .btn-delete {
+      padding: 11px 14px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 10px;
+      color: var(--danger);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .btn-delete:hover { background: rgba(239,68,68,0.2); }
+
+    /* ── SYNC STATUS ── */
+    .sync-status {
+      position: fixed;
+      bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(5,15,30,0.9);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      backdrop-filter: blur(12px);
+      z-index: 50;
+    }
+    .sync-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+    .sync-dot.ok { background: #22C55E; box-shadow: 0 0 6px #22C55E80; }
+    .sync-dot.error { background: var(--danger); }
+    .sync-dot.syncing {
+      background: #F59E0B;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* ── EDIT MODE ── */
+    .edit-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0);
+      z-index: 2;
+    }
+    .link-card.editable:hover .edit-hint { opacity: 1; }
+    .edit-hint {
+      position: absolute;
+      top: 10px; right: 14px;
+      font-size: 10px;
+      color: var(--blue);
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    /* ── EDIT TOGGLE ── */
+    .edit-toggle {
+      position: fixed;
+      top: 20px; right: 20px;
+      z-index: 50;
+      background: rgba(5,15,30,0.9);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s;
+      display: none;
+    }
+    .edit-toggle.visible { display: flex; align-items: center; gap: 6px; }
+    .edit-toggle.active { border-color: var(--border-active); color: var(--blue); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px;
+      color: var(--muted);
+      font-size: 13px;
+      animation: fadeUp 0.4s ease both;
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<!-- PASSWORD SCREEN -->
+<div id="pw-screen">
+  <div class="pw-card" id="pw-card">
+    <div class="pw-logo">
+      <div class="brand">Fitrah·Space</div>
+      <div class="sub">Personal dashboard</div>
+    </div>
+    <div class="pw-label">Password</div>
+    <input type="password" id="pw-input" class="pw-input" placeholder="••••••••" />
+    <div class="pw-error" id="pw-error">⚠ Password salah, coba lagi</div>
+    <button class="pw-btn" onclick="checkPassword()">Masuk →</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+  <div id="main">
+    <div class="greeting">
+      <div class="hello">✦ Personal Space</div>
+      <h1>Hello <span>Fitrah</span>,</h1>
+      <div class="welcome">welcome to the space ✦</div>
+    </div>
+
+    <div class="links-wrapper" id="links-container">
+      <div class="empty-state" id="empty-state" style="display:none">
+        Belum ada link. Tambahkan link pertamamu!
+      </div>
+    </div>
+
+    <button class="add-btn" id="add-btn" onclick="openModal()" style="display:none">
+      <span>＋</span> Tambah Link Baru
+    </button>
+  </div>
+</div>
+
+<!-- EDIT TOGGLE -->
+<button class="edit-toggle" id="edit-toggle" onclick="toggleEditMode()">
+  ✏️ Edit
+</button>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Tambah Link</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="field">
+      <label>Judul</label>
+      <input type="text" id="input-title" placeholder="Nama link..." />
+    </div>
+    <div class="field">
+      <label>URL</label>
+      <input type="url" id="input-url" placeholder="https://..." />
+    </div>
+    <div class="field">
+      <label>Emoji Icon (opsional)</label>
+      <input type="text" id="input-icon" placeholder="🔗" maxlength="4" />
+    </div>
+    <div class="field">
+      <label>Warna Border Card</label>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input type="color" id="input-border-color" value="#38BDF8"
+          style="width:38px;height:34px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:rgba(255,255,255,0.05);" />
+        <div id="border-color-swatches" style="display:flex;gap:6px;"></div>
+        <button onclick="resetBorderColor()"
+          style="margin-left:auto;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:'Coolvetica',sans-serif;font-size:11px;padding:6px 10px;cursor:pointer;letter-spacing:0.08em;">
+          Reset
+        </button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Batal</button>
+      <button class="btn-delete" id="btn-delete" onclick="deleteLink()" style="display:none">🗑</button>
+      <button class="btn-save" onclick="saveLink()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- SYNC STATUS -->
+<div class="sync-status" id="sync-status">
+  <div class="sync-dot" id="sync-dot"></div>
+  <span id="sync-label">–</span>
+</div>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────────────────────────
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxEshHvpM_vtoFit6FviwmMHa3hr47tXkJYbRRtMECFCo1oWcUphV4YcdQSPdWCCpYfRA/exec";
+  const PASSWORD = "Fitrah123";
+  const LS_KEY = "fl_links";
+
+  // ── STATE ────────────────────────────────────────────────────────────────────
+  let links = [];
+  let editMode = false;
+  let editingId = null;
+
+  // ── PASSWORD ─────────────────────────────────────────────────────────────────
+  function checkPassword() {
+    const val = document.getElementById('pw-input').value;
+    if (val === PASSWORD) {
+      localStorage.setItem('fl_auth', '1');
+      document.getElementById('pw-screen').style.display = 'none';
+      initApp();
+    } else {
+      const input = document.getElementById('pw-input');
+      const error = document.getElementById('pw-error');
+      const card = document.getElementById('pw-card');
+      input.classList.add('error');
+      error.classList.add('show');
+      card.style.animation = 'none';
+      card.offsetHeight;
+      card.style.animation = 'shake 0.4s ease';
+      input.value = '';
+      setTimeout(() => { input.classList.remove('error'); error.classList.remove('show'); }, 2000);
+    }
+  }
+
+  document.getElementById('pw-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPassword();
+  });
+
+  if (localStorage.getItem('fl_auth') === '1') {
+    document.getElementById('pw-screen').style.display = 'none';
+    initApp();
+  }
+
+  // ── INIT ─────────────────────────────────────────────────────────────────────
+  async function initApp() {
+    document.getElementById('main').classList.add('show');
+    document.getElementById('edit-toggle').classList.add('visible');
+    setSync('syncing', 'Syncing...');
+    await loadLinks();
+  }
+
+  // ── SYNC ─────────────────────────────────────────────────────────────────────
+  function setSync(status, label) {
+    const dot = document.getElementById('sync-dot');
+    const lbl = document.getElementById('sync-label');
+    dot.className = 'sync-dot ' + status;
+    lbl.textContent = label;
+  }
+
+  async function gsFetch(action, payload = {}) {
+    try {
+      if (APPS_SCRIPT_URL === "GANTI_DENGAN_URL_APPS_SCRIPT_KAMU") return null;
+      const url = new URL(APPS_SCRIPT_URL);
+      url.searchParams.set("action", action);
+      if (action === "read") {
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error("fetch failed");
+        return await res.json();
+      } else {
+        await fetch(url.toString(), {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ action, ...payload }),
+          mode: "no-cors"
+        });
+        return { ok: true };
+      }
+    } catch (e) {
+      console.warn("Sync failed:", e.message);
+      return null;
+    }
+  }
+
+  async function loadLinks() {
+    const remote = await gsFetch("read");
+    if (remote && remote.links) {
+      links = remote.links;
+      localStorage.setItem(LS_KEY, JSON.stringify(links));
+      setSync('ok', 'Synced ✓');
+    } else {
+      const local = localStorage.getItem(LS_KEY);
+      links = local ? JSON.parse(local) : [];
+      setSync(APPS_SCRIPT_URL === "GANTI_DENGAN_URL_APPS_SCRIPT_KAMU" ? '' : 'error', APPS_SCRIPT_URL === "GANTI_DENGAN_URL_APPS_SCRIPT_KAMU" ? 'Local only' : 'Sync Error');
+    }
+    renderLinks();
+  }
+
+  let saveTimer = null;
+  async function saveLinks() {
+    localStorage.setItem(LS_KEY, JSON.stringify(links));
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      if (APPS_SCRIPT_URL === "GANTI_DENGAN_URL_APPS_SCRIPT_KAMU") return;
+      setSync('syncing', 'Syncing...');
+      const res = await gsFetch("write", { links });
+      setSync(res ? 'ok' : 'error', res ? 'Synced ✓' : 'Sync Error');
+    }, 1200);
+  }
+
+  // ── RENDER ────────────────────────────────────────────────────────────────────
+  function renderLinks() {
+    const container = document.getElementById('links-container');
+    const empty = document.getElementById('empty-state');
+    const addBtn = document.getElementById('add-btn');
+
+    // Clear existing cards (keep empty state)
+    Array.from(container.children).forEach(el => {
+      if (el.id !== 'empty-state') el.remove();
+    });
+
+    if (links.length === 0) {
+      empty.style.display = 'block';
+    } else {
+      empty.style.display = 'none';
+      links.forEach((link, i) => {
+        const card = createCard(link, i);
+        container.appendChild(card);
+      });
+    }
+
+    addBtn.style.display = editMode ? 'flex' : 'none';
+  }
+
+  function createCard(link, i) {
+    const card = document.createElement('a');
+    card.className = 'link-card' + (editMode ? ' editable' : '');
+    card.style.animationDelay = (i * 0.07) + 's';
+    card.href = editMode ? 'javascript:void(0)' : link.url;
+    if (!editMode) card.target = '_blank';
+    card.rel = 'noopener noreferrer';
+
+    // Apply full color theme if set
+    if (link.borderColor) {
+      const c = link.borderColor;
+      // Convert hex to rgb for rgba usage
+      const r = parseInt(c.slice(1,3),16), g = parseInt(c.slice(3,5),16), b = parseInt(c.slice(5,7),16);
+      card.style.borderColor = `rgba(${r},${g},${b},0.6)`;
+      card.style.background = `rgba(${r},${g},${b},0.08)`;
+      card.setAttribute('data-color', c);
+    }
+
+    if (editMode) {
+      card.onclick = () => openModal(link.id);
+      const hint = document.createElement('div');
+      hint.className = 'edit-hint';
+      hint.textContent = 'Tap to edit';
+      card.appendChild(hint);
+    }
+
+    const c = link.borderColor || '#38BDF8';
+    const r = parseInt(c.slice(1,3),16), g = parseInt(c.slice(3,5),16), b = parseInt(c.slice(5,7),16);
+
+    card.innerHTML += `
+      <div class="link-icon" style="background:rgba(${r},${g},${b},0.18);border-color:rgba(${r},${g},${b},0.35);">${link.icon || '🔗'}</div>
+      <div class="link-info">
+        <div class="link-title">${link.title}</div>
+        <div class="link-url">${link.url}</div>
+      </div>
+      <div class="link-arrow" style="color:rgba(${r},${g},${b},0.8);">→</div>
+    `;
+
+    return card;
+  }
+
+  // ── EDIT MODE ─────────────────────────────────────────────────────────────────
+  function toggleEditMode() {
+    editMode = !editMode;
+    const toggle = document.getElementById('edit-toggle');
+    toggle.textContent = editMode ? '✓ Done' : '✏️ Edit';
+    toggle.classList.toggle('active', editMode);
+    renderLinks();
+  }
+
+  // ── MODAL ─────────────────────────────────────────────────────────────────────
+  function openModal(id = null) {
+    editingId = id;
+    const modal = document.getElementById('modal');
+    const title = document.getElementById('modal-title');
+    const delBtn = document.getElementById('btn-delete');
+
+    if (id) {
+      const link = links.find(l => l.id === id);
+      document.getElementById('input-title').value = link.title;
+      document.getElementById('input-url').value = link.url;
+      document.getElementById('input-icon').value = link.icon || '';
+      document.getElementById('input-border-color').value = link.borderColor || '#38BDF8';
+      title.textContent = 'Edit Link';
+      delBtn.style.display = 'block';
+    } else {
+      document.getElementById('input-title').value = '';
+      document.getElementById('input-url').value = '';
+      document.getElementById('input-icon').value = '';
+      document.getElementById('input-border-color').value = '#38BDF8';
+      title.textContent = 'Tambah Link';
+      delBtn.style.display = 'none';
+    }
+
+    // Build swatches
+    const swatchColors = ['#38BDF8','#818CF8','#34D399','#F472B6','#FB923C','#FACC15','#FFFFFF'];
+    const swatchEl = document.getElementById('border-color-swatches');
+    swatchEl.innerHTML = '';
+    swatchColors.forEach(c => {
+      const s = document.createElement('button');
+      s.style.cssText = `width:22px;height:22px;border-radius:50%;background:${c};border:2px solid transparent;cursor:pointer;transition:transform 0.15s;`;
+      s.title = c;
+      s.onclick = () => { document.getElementById('input-border-color').value = c; };
+      s.onmouseenter = () => s.style.transform = 'scale(1.2)';
+      s.onmouseleave = () => s.style.transform = 'scale(1)';
+      swatchEl.appendChild(s);
+    });
+
+    modal.classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    editingId = null;
+  }
+
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+
+  function saveLink() {
+    const title = document.getElementById('input-title').value.trim();
+    const url = document.getElementById('input-url').value.trim();
+    const icon = document.getElementById('input-icon').value.trim() || '🔗';
+    const borderColor = document.getElementById('input-border-color').value;
+
+    if (!title || !url) return;
+
+    if (editingId) {
+      links = links.map(l => l.id === editingId ? { ...l, title, url, icon, borderColor } : l);
+    } else {
+      links.push({ id: Date.now().toString(), title, url, icon, borderColor });
+    }
+
+    saveLinks();
+    renderLinks();
+    closeModal();
+  }
+
+  function resetBorderColor() {
+    document.getElementById('input-border-color').value = '#38BDF8';
+  }
+
+  function deleteLink() {
+    if (!editingId) return;
+    links = links.filter(l => l.id !== editingId);
+    saveLinks();
+    renderLinks();
+    closeModal();
+  }
+
+  // Enter to save
+  ['input-title','input-url','input-icon'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') saveLink();
+    });
+  });
+</script>
+</body>
+</html>
